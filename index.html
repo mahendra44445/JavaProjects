@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistic System - Java Project</title>
+    <title>Logistic System - Java GUI Application</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,7 +14,7 @@
         }
         .container {
             background-color: #fff;
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 30px;
             border: 3px solid #0066cc;
@@ -28,6 +28,7 @@
             color: #0066cc;
             border-bottom: 1px solid #0066cc;
             padding-bottom: 5px;
+            margin-top: 30px;
         }
         .code {
             background-color: #f0f0f0;
@@ -36,6 +37,8 @@
             margin: 10px 0;
             font-family: monospace;
             overflow-x: auto;
+            font-size: 0.85em;
+            line-height: 1.4;
         }
         .output {
             background-color: #000;
@@ -44,8 +47,9 @@
             margin: 10px 0;
             font-family: monospace;
             border: 1px solid #0066cc;
+            font-size: 0.9em;
         }
-        ul {
+        ul, li {
             line-height: 1.8;
         }
         a {
@@ -55,93 +59,247 @@
         a:hover {
             text-decoration: underline;
         }
+        .section {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Logistic System - Java Project</h1>
-        <p>A Complete Logistics Management System Implementation in Java</p>
+        <h1>Logistic System - Java GUI Application</h1>
+        <p>A Complete Logistics Management System with Swing GUI</p>
         
-        <h2>Project Overview</h2>
-        <p>This is a comprehensive Logistic System implementation in Java that demonstrates real-world logistics management including shipment tracking, vehicle allocation, warehouse inventory management, and route optimization.</p>
-        
-        <h2>Key Features</h2>
+        <h2>GUI Features</h2>
         <ul>
-            <li>Shipment Tracking with ID, Status, and Location</li>
-            <li>Vehicle Management with Driver Information</li>
-            <li>Warehouse Inventory System using HashMap</li>
-            <li>Route Optimization Algorithm</li>
-            <li>Real-time Location Updates</li>
-            <li>Vehicle Availability Management</li>
+            <li>Input fields for Shipment ID, Start Location, Vehicle ID, Driver Name, Item Name, Quantity</li>
+            <li>Buttons: Create Shipment, Assign Vehicle, Track Shipment, Start Delivery</li>
+            <li>Real-time status display and output console</li>
+            <li>Interactive user interface for logistics management</li>
         </ul>
         
-        <h2>Core Classes</h2>
-        <p><strong>Shipment Class:</strong> Manages individual shipments with tracking ID, status, and location information.</p>
-        <p><strong>Vehicle Class:</strong> Represents delivery vehicles with vehicle ID, driver name, and availability status.</p>
-        <p><strong>Warehouse Class:</strong> Manages inventory items using Java HashMap data structure.</p>
-        <p><strong>RouteOptimizer Class:</strong> Calculates optimized delivery routes between warehouse and customer locations.</p>
-        
-        <h2>Source Code</h2>
+        <h2>Complete Java GUI Code</h2>
         <div class="code">
-package logistic;<br>
-import java.util.HashMap;<br>
-import java.util.Map;<br><br>
-public class LogisticSystem {<br>
-&nbsp;&nbsp;static class Shipment {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;private String shipmentId;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;private String status = "In Transit";<br>
-&nbsp;&nbsp;&nbsp;&nbsp;private String location;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public void updateLocation(String newLocation) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;this.location = newLocation;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;public void updateStatus(String status) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;this.status = status;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;}<br><br>
-&nbsp;&nbsp;static class Vehicle {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;private String vehicleId;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;private String driverName;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;private boolean available = true;<br>
-&nbsp;&nbsp;}<br><br>
-&nbsp;&nbsp;static class Warehouse {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;private Map&lt;String, Integer&gt; inventory = new HashMap&lt;&gt;();<br>
-&nbsp;&nbsp;}<br>
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
+
+public class LogisticGUI extends JFrame {
+    private JTextField shipmentIdField, startLocationField, vehicleIdField, driverNameField, itemNameField, quantityField;
+    private JTextArea outputArea;
+    private Warehouse warehouse;
+    private Map&lt;String, Shipment&gt; shipments;
+    private Map&lt;String, Vehicle&gt; vehicles;
+
+    public LogisticGUI() {
+        setTitle("User Defined Logistics Management System");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1000, 600);
+        setLocationRelativeTo(null);
+
+        warehouse = new Warehouse();
+        shipments = new HashMap&lt;&gt;();
+        vehicles = new HashMap&lt;&gt;();
+
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Input Panel
+        JPanel inputPanel = createInputPanel();
+        mainPanel.add(inputPanel, BorderLayout.NORTH);
+
+        // Button Panel
+        JPanel buttonPanel = createButtonPanel();
+        mainPanel.add(buttonPanel, BorderLayout.CENTER);
+
+        // Output Area
+        outputArea = new JTextArea(15, 50);
+        outputArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(outputArea);
+        mainPanel.add(scrollPane, BorderLayout.SOUTH);
+
+        add(mainPanel);
+        setVisible(true);
+    }
+
+    private JPanel createInputPanel() {
+        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        panel.setBorder(BorderFactory.createTitledBorder("Logistics Management Form"));
+
+        panel.add(new JLabel("Shipment ID:"));
+        shipmentIdField = new JTextField();
+        panel.add(shipmentIdField);
+
+        panel.add(new JLabel("Start Location:"));
+        startLocationField = new JTextField();
+        panel.add(startLocationField);
+
+        panel.add(new JLabel("Vehicle ID:"));
+        vehicleIdField = new JTextField();
+        panel.add(vehicleIdField);
+
+        panel.add(new JLabel("Driver Name:"));
+        driverNameField = new JTextField();
+        panel.add(driverNameField);
+
+        panel.add(new JLabel("Item Name:"));
+        itemNameField = new JTextField();
+        panel.add(itemNameField);
+
+        panel.add(new JLabel("Quantity:"));
+        quantityField = new JTextField();
+        panel.add(quantityField);
+
+        return panel;
+    }
+
+    private JPanel createButtonPanel() {
+        JPanel panel = new JPanel(new GridLayout(1, 4, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JButton createButton = new JButton("Create Shipment");
+        createButton.addActionListener(e -> createShipment());
+        panel.add(createButton);
+
+        JButton assignButton = new JButton("Assign Vehicle");
+        assignButton.addActionListener(e -> assignVehicle());
+        panel.add(assignButton);
+
+        JButton trackButton = new JButton("Track Shipment");
+        trackButton.addActionListener(e -> trackShipment());
+        panel.add(trackButton);
+
+        JButton deliveryButton = new JButton("Start Delivery");
+        deliveryButton.addActionListener(e -> startDelivery());
+        panel.add(deliveryButton);
+
+        return panel;
+    }
+
+    private void createShipment() {
+        String shipmentId = shipmentIdField.getText();
+        String location = startLocationField.getText();
+        String itemName = itemNameField.getText();
+        int quantity = Integer.parseInt(quantityField.getText());
+
+        Shipment shipment = new Shipment(shipmentId, location);
+        shipments.put(shipmentId, shipment);
+        warehouse.addItem(itemName, quantity);
+
+        output("Shipment Created Successfully!");
+        output("Warehouse Inventory:");
+        warehouse.displayInventory();
+    }
+
+    private void assignVehicle() {
+        String vehicleId = vehicleIdField.getText();
+        String driverName = driverNameField.getText();
+
+        Vehicle vehicle = new Vehicle(vehicleId, driverName);
+        vehicle.assign();
+        vehicles.put(vehicleId, vehicle);
+
+        output("Vehicle Assigned Successfully!");
+    }
+
+    private void trackShipment() {
+        String shipmentId = shipmentIdField.getText();
+        Shipment shipment = shipments.get(shipmentId);
+
+        if (shipment != null) {
+            output("Shipment ID: " + shipmentId);
+            output("Status: " + shipment.status);
+            output("Location: " + shipment.location);
+            output("Delivery started...");
+        } else {
+            output("Shipment not found!");
+        }
+    }
+
+    private void startDelivery() {
+        String shipmentId = shipmentIdField.getText();
+        Shipment shipment = shipments.get(shipmentId);
+
+        if (shipment != null) {
+            shipment.updateStatus("Out for Delivery");
+            shipment.updateLocation("On Route");
+            output("Shipment Delivered Successfully!");
+        }
+    }
+
+    private void output(String message) {
+        outputArea.append(message + "\n");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -&gt; new LogisticGUI());
+    }
 }
         </div>
         
-        <h2>Expected Output</h2>
-        <div class="output">
-Initial State:<br>
-Warehouse Inventory:<br>
-Laptop: 50<br>
-Phone: 100<br>
-Shipment ID: SHP001, Status: In Transit, Location: Warehouse A<br>
-Vehicle ID: VH101, Driver: John, Available: true<br><br>
-Vehicle assigned to shipment.<br>
-Optimized route from Warehouse A to Customer B<br><br>
-After Updates:<br>
-Shipment ID: SHP001, Status: Out for Delivery, Location: On Route<br>
-Vehicle ID: VH101, Driver: John, Available: false<br>
-Warehouse Inventory:<br>
-Laptop: 49<br>
-Phone: 100
+        <h2>Core Classes (Shipment, Vehicle, Warehouse)</h2>
+        <div class="code">
+static class Shipment {
+    String shipmentId, status, location;
+    Shipment(String shipmentId, String location) {
+        this.shipmentId = shipmentId;
+        this.location = location;
+        this.status = "In Transit";
+    }
+}
+
+static class Vehicle {
+    String vehicleId, driverName;
+    boolean available;
+    Vehicle(String vehicleId, String driverName) {
+        this.vehicleId = vehicleId;
+        this.driverName = driverName;
+        this.available = true;
+    }
+}
+
+static class Warehouse {
+    Map&lt;String, Integer&gt; inventory = new HashMap&lt;&gt;();
+    void addItem(String item, int qty) {
+        inventory.put(item, inventory.getOrDefault(item, 0) + qty);
+    }
+}
         </div>
         
-        <h2>Technologies Used</h2>
+        <h2>How to Use</h2>
         <ul>
-            <li>Java Programming Language</li>
-            <li>Object-Oriented Programming (OOP)</li>
-            <li>HashMap Data Structure</li>
-            <li>Static Classes</li>
-            <li>GitHub Pages Deployment</li>
+            <li>1. Enter Shipment ID (e.g., "1")</li>
+            <li>2. Enter Start Location (e.g., "hyderabad")</li>
+            <li>3. Enter Vehicle ID (e.g., "201")</li>
+            <li>4. Enter Driver Name (e.g., "gurucharan")</li>
+            <li>5. Enter Item Name (e.g., "laptop")</li>
+            <li>6. Enter Quantity (e.g., "1")</li>
+            <li>7. Click "Create Shipment" button</li>
+            <li>8. Click "Assign Vehicle" button</li>
+            <li>9. Click "Track Shipment" button to track</li>
+            <li>10. Click "Start Delivery" button to complete</li>
         </ul>
         
-        <h2>Links</h2>
-        <p><a href="https://github.com/mahendra44445/JavaProjects">View Repository on GitHub</a></p>
-        <p><a href="https://github.com/mahendra44445/JavaProjects/blob/main/index.html">View Source Code</a></p>
+        <h2>Expected Output</h2>
+        <div class="output">
+Shipment Created Successfully!
+Warehouse Inventory:
+laptop: 1
+
+Vehicle Assigned Successfully!
+
+Shipment ID: 1
+Status: In Transit
+Location: hyderabad
+Delivery started...
+
+Shipment Delivered Successfully!
+Shipment ID: 1, Status: Out for Delivery, Location: On Route
+        </div>
         
-        <hr>
-        <p style="text-align: center; color: #666; margin-top: 30px;">Copyright 2025 Mahendra44445 | Logistic System Java Project</p>
+        <h2>GitHub Repository</h2>
+        <p><a href="https://github.com/mahendra44445/JavaProjects">View Repository</a></p>
+        <p style="text-align: center; color: #666; margin-top: 30px;">Copyright 2025 Mahendra44445 | Logistic System GUI Application</p>
     </div>
 </body>
 </html>
